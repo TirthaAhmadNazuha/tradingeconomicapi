@@ -1,0 +1,9 @@
+services:
+ notes:
+   build:
+     context: .
+   ports:
+     - 5720:5720
+   volumes:
+     - ./:/app
+   command: npm run deploy
