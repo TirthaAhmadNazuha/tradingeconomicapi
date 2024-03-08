@@ -4,6 +4,6 @@ services:
      context: .
    ports:
      - 5720:5720
-   container_name: tradingeconomic_api_v1
+   container_name: tradingeconomic_api
    restart: always
    command: -d
