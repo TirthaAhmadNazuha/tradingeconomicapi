@@ -5,4 +5,4 @@ RUN npm -v
 WORKDIR /app
 RUN npm install
 EXPOSE 5720
-ENTRYPOINT ["npm", "deploy"]
+ENTRYPOINT ["npm", "start"]
