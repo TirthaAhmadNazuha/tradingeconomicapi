@@ -1,6 +1,9 @@
 services:
- api:
+ tradingeconomic_api:
    build:
      context: .
    ports:
      - 5720:5720
+   container_name: tradingeconomic_api_v1
+   restart: always
+   command: -d
