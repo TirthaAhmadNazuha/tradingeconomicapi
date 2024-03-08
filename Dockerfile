@@ -2,8 +2,7 @@ FROM jitesoft/node-base:20.7.0
 COPY ./ /app
 RUN node -v
 RUN npm -v
-RUN apk update \
-    && apk add wget gnupg \
+RUN apk add wget gnupg \
     && wget -q -O /etc/apk/keys/google-cloud-sdk.pub https://dl-ssl.google.com/linux/linux_signing_key.pub \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apk update \
