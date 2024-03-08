@@ -83,7 +83,7 @@ app.ready(() => {
   app.swagger();
 });
 
-app.listen({ port: 5720 }, (err, address) => {
+app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
   if (err) throw err;
   console.log(`Server running on ${address}`);
   console.log(`Swagger api on ${address}/docs`);
