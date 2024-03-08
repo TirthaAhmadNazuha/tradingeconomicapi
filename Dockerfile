@@ -1,5 +1,4 @@
 FROM jitesoft/node-base:20.7.0
-RUN 
 COPY ./ /app
 RUN node -v
 RUN npm install npm@latest -g
