@@ -43,7 +43,12 @@ export function getJson(path, Bucket = 'ai-pipeline-statistics') {
       Key: path
     }, (err, res) => {
       if (err) return r(null);
-      r(JSON.parse(res.Body));
+      try {
+        res.Body = JSON.parse(res.Body);
+      } catch (error) {
+        res.Body = null;
+      }
+      r(res);
     });
   });
 }
@@ -54,6 +59,7 @@ export function getObject(path, Bucket = 'ai-pipeline-statistics') {
       Key: path
     }, (err, res) => {
       if (err) return reject(err);
+      console.log(res);
       r(res);
     });
   });

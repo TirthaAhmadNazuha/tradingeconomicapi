@@ -14,7 +14,7 @@ app.register(swagger, {
     info: {
       title: 'API Trading Economics',
       version: '1.0',
-      description: 'Get data price of date historical'
+      description: 'Get data price of date historical\nSource: https://tradingeconomics.com/'
     },
     tags: [
       { name: 'Commodity', description: 'Get data historical price of date' }
@@ -38,29 +38,33 @@ app.register((app, opts, done) => {
         commodityName: { type: 'string' },
         timeFrame: {
           type: 'string',
-          enum: ['1d', '1w', '1y', '5y', '10y', '25y']
-        }
+          enum: ['1d', '1w', '1y', '5y', '10y', '25y'],
+          default: '1d'
+        },
+        force: { type: 'number', enum: [0, 1], default: 0 }
       },
     }
   }, async (req, res) => {
-    let { commodityName, timeFrame } = req.query;
+    let { commodityName, timeFrame, force } = req.query;
     timeFrame = timeFrame || '1d';
     let [date, hour] = new Date().toISOString().split('.')[0].split('T');
     hour = hour.split(':')[0];
     try {
       const path = `${rootDir}/${commodityName}/${date}/${timeFrame}.json`;
-      const fromS3 = await getJson(path);
-      if (fromS3) {
-        if (timeFrame == '1d') {
-          const isIncludeTheHour = fromS3.find((item) => item.date.includes(`T${hour}`));
-          console.log(isIncludeTheHour);
-          if (isIncludeTheHour) {
+      console.log(force);
+      if (!force) {
+        const fromS3 = await getJson(path);
+        if (fromS3) {
+          if (timeFrame == '1d') {
+            const lastMod = new Date(fromS3.LastModified).getTime();
+            if (Math.floor(lastMod / 1000) + 3600 > Math.floor(new Date().getTime() / 1000)) {
+              console.log(`from s3 [${path}]`);
+              return fromS3.Body;
+            }
+          } else {
             console.log(`from s3 [${path}]`);
             return fromS3;
           }
-        } else {
-          console.log(`from s3 [${path}]`);
-          return fromS3;
         }
       }
       const fromFetch = await tradingeconomics.handler(commodityName, timeFrame);
@@ -82,4 +86,5 @@ app.ready(() => {
 app.listen({ port: 5720 }, (err, address) => {
   if (err) throw err;
   console.log(`Server running on ${address}`);
+  console.log(`Swagger api on ${address}/docs`);
 });
