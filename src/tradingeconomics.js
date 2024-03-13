@@ -9,7 +9,12 @@ class Tradingeconomics {
 
   async handler(comodityName, timeFrame = '1d') {
     console.log(`Fetch ${comodityName} ${timeFrame}`);
-    const browser = await launch({ executablePath: '/usr/bin/chromedriver', args: ['--no-sandbox'] });
+    const browser = await launch({
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ]
+    });
     const page = (await browser.pages())[0];
     try {
       const ua =
