@@ -7,13 +7,9 @@ class Tradingeconomics {
     this.browser = null;
   }
 
-  async start() {
-    this.browser = await launch({ headless: 'new' });
-  }
-
   async handler(comodityName, timeFrame = '1d') {
     console.log(`Fetch ${comodityName} ${timeFrame}`);
-    const browser = await launch({ headless: 'new' });
+    const browser = await launch({ executablePath: '/usr/bin/chromedriver', args: ['--no-sandbox'] });
     const page = (await browser.pages())[0];
     try {
       const ua =
