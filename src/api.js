@@ -118,13 +118,13 @@ async function main() {
     }, 10);
   });
 
-  // app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
-  app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+  // app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+  app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
     if (err) throw err;
     console.log(`Server running on ${address}`);
     console.log(`Swagger api on ${address}/docs`);
   });
 }
 
-main();
-// new CreateCluster(main, 10).start();
+// main();
+new CreateCluster(main, 10).start();
