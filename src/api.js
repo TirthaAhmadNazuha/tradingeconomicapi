@@ -79,6 +79,15 @@ function main() {
         throw err;
       }
     });
+
+    app.get('/list-commodity', {
+      schema: {
+        description: 'for commodity',
+        tags: ['Commodity']
+      }
+    }, (req, res) => {
+      return tradingeconomics.getListCommodity();
+    });
     done();
   });
 
@@ -86,11 +95,13 @@ function main() {
     app.swagger();
   });
 
-  app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
+  // app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
+  app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
     if (err) throw err;
     console.log(`Server running on ${address}`);
     console.log(`Swagger api on ${address}/docs`);
   });
 }
 
-new CreateCluster(main, 10).start();
+main();
+// new CreateCluster(main, 10).start();

@@ -34,6 +34,28 @@ class Tradingeconomics {
       await browser.close();
     }
   }
+
+  async getListCommodity() {
+    const browser = await launch({
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ]
+    });
+    const page = (await browser.pages())[0];
+    try {
+      const ua =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
+      await page.setUserAgent(ua);
+      await page.goto('https://tradingeconomics.com/commodities', { waitUntil: 'domcontentloaded' });
+      const as = await page.$$eval('.card td a', (as) => as.map(a => a.href.split('/commodity/')[1]).filter(a => a));
+      return as;
+    } catch (error) {
+      return { error: error.message };
+    } finally {
+      await browser.close();
+    }
+  }
 }
 
 export default Tradingeconomics;
