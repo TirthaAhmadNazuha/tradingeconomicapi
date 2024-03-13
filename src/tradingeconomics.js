@@ -22,7 +22,7 @@ class Tradingeconomics {
       await page.setUserAgent(ua);
       await page.goto(`https://tradingeconomics.com/commodity/${comodityName}`, { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => window.scrollTo(0, 500));
-      await (await page.waitForSelector(`.iChart-menu2-bottom-cnt-horizontal > a[data-span="${timeFrame}"]`)).click();
+      await (await page.waitForSelector(`.iChart-menu2-bottom-cnt-horizontal > a[data-span="${timeFrame}"]`, { timeout: 6000 })).click();
       await new Promise((r) => setTimeout(r, 2000));
       const data = await page.evaluate(() => {
         const unit = document.querySelector('.iChart-bodylabels-ohlc').textContent;
