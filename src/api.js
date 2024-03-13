@@ -7,7 +7,7 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import CreateCluster from './library/clustering.js';
 
 
-function main() {
+async function main() {
   const app = fastify();
   app.register(fastifyCors);
 
@@ -28,17 +28,24 @@ function main() {
     routePrefix: '/docs',
     exposeRoute: true
   });
+  const tradingeconomics = new Tradingeconomics();
+  const rootDir = 'data/data_raw/tradingeconomics/commodity';
+  let commodities = await getJson(`${rootDir}/commodities.json`);
+  if (!commodities) {
+    commodities = await tradingeconomics.getListCommodity();
+    await uploadJson(`${rootDir}/commodities.json`, commodities);
+  } else {
+    commodities = commodities.Body;
+  }
 
   app.register((app, opts, done) => {
-    const tradingeconomics = new Tradingeconomics();
-    const rootDir = 'data/data_raw/tradingeconomics/commodity';
 
     app.get('/commodity', {
       schema: {
         description: 'for commodity',
         tags: ['Commodity'],
         querystring: {
-          commodityName: { type: 'string' },
+          commodityName: { type: 'string', enum: commodities },
           timeFrame: {
             type: 'string',
             enum: ['1d', '1w', '1y', '5y', '10y', '25y'],
@@ -85,23 +92,35 @@ function main() {
         description: 'for commodity',
         tags: ['Commodity']
       }
-    }, (req, res) => {
-      return tradingeconomics.getListCommodity();
+    }, async (req, res) => {
+      const path = `${rootDir}/commodities.json`;
+      const fromS3 = await getJson(path);
+      if (fromS3) {
+        const lastMod = new Date(fromS3.LastModified).getTime();
+        if (Math.floor(lastMod / 1000) + 3600 > Math.floor(new Date().getTime() / 1000)) {
+          return fromS3.Body;
+        }
+      }
+      const fromFetch = await tradingeconomics.getListCommodity();
+      await uploadJson(path, fromFetch);
+      return fromFetch;
     });
     done();
   });
 
   app.ready(() => {
-    app.swagger();
+    setTimeout(() => {
+      app.swagger();
+    }, 10);
   });
 
-  // app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
-  app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+  // app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+  app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
     if (err) throw err;
     console.log(`Server running on ${address}`);
     console.log(`Swagger api on ${address}/docs`);
   });
 }
 
-main();
-// new CreateCluster(main, 10).start();
+// main();
+new CreateCluster(main, 10).start();

@@ -25,7 +25,17 @@ class Tradingeconomics {
       await (await page.waitForSelector(`.iChart-menu2-bottom-cnt-horizontal > a[data-span="${timeFrame}"]`)).click();
       await new Promise((r) => setTimeout(r, 2000));
       const data = await page.evaluate(() => {
-        return window.all_serires[0].data;
+        const unit = document.querySelector('.iChart-bodylabels-ohlc').textContent;
+        return window.all_serires[0].data.map((item) => {
+          return {
+            x: item.x,
+            value: item.y,
+            date: item.date,
+            percentChange: item?.percentChange,
+            change: item?.change,
+            unit: unit.includes('(') ? unit.split('(')[1].split(')')[0] : null
+          };
+        });
       });
       return data;
     } catch (error) {
