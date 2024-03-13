@@ -48,7 +48,7 @@ async function main() {
           commodityName: { type: 'string', enum: commodities },
           timeFrame: {
             type: 'string',
-            enum: ['1d', '1w', '1y', '5y', '10y', '25y'],
+            enum: ['1d', '1w', '1m', '1y', '5y', '10y', '25y'],
             default: '1d'
           },
           force: { type: 'number', enum: [0, 1], default: 0 }
