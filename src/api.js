@@ -20,7 +20,8 @@ async function main() {
         description: 'Get data price of date historical\nSource: https://tradingeconomics.com/'
       },
       tags: [
-        { name: 'Commodity', description: 'Get data historical price of date' }
+        { name: 'Commodity', description: 'Get data historical price of date' },
+        { name: 'Indicator', description: 'Get data indicator country' },
       ]
     },
   });
@@ -109,7 +110,36 @@ async function main() {
       await uploadJson(path, fromFetch);
       return fromFetch;
     });
+
+    app.get('/indicators/:country_code', {
+      schema: {
+        description: 'get indicator list',
+        tags: ['Indicator'],
+        params: {
+          country_code: { type: 'string' }
+        }
+      }
+    }, (req, res) => {
+      const { country_code } = req.params;
+      return tradingeconomics.getIndicatorCountry(country_code);
+    });
+
+    app.get('/indicators/:country_code/:indicator_name', {
+      schema: {
+        description: 'get indicator list',
+        tags: ['Indicator'],
+        params: {
+          country_code: { type: 'string' },
+          indicator_name: { type: 'string' },
+        }
+      }
+    }, async (req, res) => {
+      const { country_code, indicator_name } = req.params;
+      const [status, data] = await tradingeconomics.getDataIndicator(country_code, indicator_name);
+      res.status(status).send(data);
+    });
     done();
+    console.log('route done');
   });
 
   app.ready(() => {
@@ -118,13 +148,13 @@ async function main() {
     }, 10);
   });
 
-  // app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
-  app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
+  app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+    // app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
     if (err) throw err;
     console.log(`Server running on ${address}`);
     console.log(`Swagger api on ${address}/docs`);
   });
 }
 
-// main();
-new CreateCluster(main, 10).start();
+main();
+// new CreateCluster(main, 10).start();
