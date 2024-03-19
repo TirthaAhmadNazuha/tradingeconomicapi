@@ -83,7 +83,6 @@ class Tradingeconomics {
       await page.setUserAgent(ua);
       await page.goto(`https://tradingeconomics.com/${country_code}/indicators`, { waitUntil: 'domcontentloaded' });
       const indicators = await page.$$eval('#pagemenutabs li.nav-item > a[data-bs-toggle="tab"]', (items) => items.map((i) => i.textContent.trim().toLowerCase()));
-      console.log(indicators);
       const dataIndicators = {};
       await Promise.all(indicators.map(async (id) => {
         dataIndicators[id] = await this.parseTableIndicatorAndSave(id, page);
@@ -102,7 +101,10 @@ class Tradingeconomics {
 
   async getDataIndicator(country_code, indicator_name) {
     const fromS3 = await getJson(this.indicatorPathS3 + `${country_code}/${indicator_name}.json`);
-    if (fromS3) return [200, { result: fromS3.Body }];
+    if (fromS3) {
+      const days_difference = Math.floor((new Date().getTime() - fromS3.LastModified.getTime()) / (1000 * 60 * 60 * 24))
+      if (days_difference <= 3) return [200, { result: fromS3.Body }];
+    }
     const fromFetch = await this.getIndicatorCountry(country_code, indicator_name);
     if (fromFetch) return [200, { result: fromFetch }];
     return [404, { result: null }];
@@ -138,4 +140,5 @@ class Tradingeconomics {
   }
 }
 
+new Tradingeconomics().getDataIndicator('united-states', 'health')
 export default Tradingeconomics;

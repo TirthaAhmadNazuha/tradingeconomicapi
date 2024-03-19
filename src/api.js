@@ -16,8 +16,8 @@ async function main() {
     swagger: {
       info: {
         title: 'API Trading Economics',
-        version: '1.0',
-        description: 'Get data price of date historical\nSource: https://tradingeconomics.com/'
+        version: '1.2',
+        description: 'Get data price of date historical\nSource: https://tradingeconomics.com/\n\n Contact the creator on Telegram @tirthaahmadnazuha'
       },
       tags: [
         { name: 'Commodity', description: 'Get data historical price of date' },
@@ -62,17 +62,17 @@ async function main() {
       hour = hour.split(':')[0];
       try {
         const path = `${rootDir}/${commodityName}/${date}/${timeFrame}.json`;
-        console.log(force);
         if (!force) {
           const fromS3 = await getJson(path);
           if (fromS3) {
+            const days_difference = Math.floor((new Date().getTime() - fromS3.LastModified.getTime()) / (1000 * 60 * 60 * 24))
             if (timeFrame == '1d') {
               const lastMod = new Date(fromS3.LastModified).getTime();
               if (Math.floor(lastMod / 1000) + 3600 > Math.floor(new Date().getTime() / 1000)) {
                 console.log(`from s3 [${path}]`);
                 return fromS3.Body;
               }
-            } else {
+            } else if (days_difference == 0) {
               console.log(`from s3 [${path}]`);
               return fromS3;
             }
@@ -80,7 +80,6 @@ async function main() {
         }
         const fromFetch = await tradingeconomics.handler(commodityName, timeFrame);
         if (fromFetch?.error) {
-
           return res.status(500).send({ error: `Commodity ${commodityName} not have ${timeFrame} data.` });
         }
         console.log(`from fetch: [${path}]`);
@@ -101,10 +100,8 @@ async function main() {
       const path = `${rootDir}/commodities.json`;
       const fromS3 = await getJson(path);
       if (fromS3) {
-        const lastMod = new Date(fromS3.LastModified).getTime();
-        if (Math.floor(lastMod / 1000) + 3600 > Math.floor(new Date().getTime() / 1000)) {
-          return fromS3.Body;
-        }
+        const days_difference = Math.floor((new Date().getTime() - fromS3.LastModified.getTime()) / (1000 * 60 * 60 * 24))
+        if (days_difference == 0) return fromS3.Body
       }
       const fromFetch = await tradingeconomics.getListCommodity();
       await uploadJson(path, fromFetch);
@@ -139,7 +136,6 @@ async function main() {
       res.status(status).send(data);
     });
     done();
-    console.log('route done');
   });
 
   app.ready(() => {
@@ -148,13 +144,13 @@ async function main() {
     }, 10);
   });
 
-  app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
-    // app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
+  // app.listen({ host: 'localhost', port: 5720 }, (err, address) => {
+  app.listen({ host: '0.0.0.0', port: 5720 }, (err, address) => {
     if (err) throw err;
     console.log(`Server running on ${address}`);
     console.log(`Swagger api on ${address}/docs`);
   });
 }
 
-main();
-// new CreateCluster(main, 10).start();
+// main();
+new CreateCluster(main, 6).start();
